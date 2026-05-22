@@ -16,25 +16,35 @@ const PORT =
     process.env.PORT || 10000;
 
 // ========================================
-// MYSQL AIVEN
+// HOST
+// ========================================
+
+const HOST = '0.0.0.0';
+
+// ========================================
+// MYSQL CONFIG
 // ========================================
 
 const pool = mysql.createPool({
 
     host:
+        process.env.DB_HOST ||
         'mysql-68cfa5b-pokemon.a.aivencloud.com',
 
     user:
+        process.env.DB_USER ||
         'avnadmin',
 
     password:
+        process.env.DB_PASSWORD ||
         'AVNS_mGAvK97g1YIoDQpXXZw',
 
     database:
+        process.env.DB_NAME ||
         'defaultdb',
 
     port:
-        12160,
+        process.env.DB_PORT || 12160,
 
     ssl: {
         rejectUnauthorized: false
@@ -71,164 +81,15 @@ function sendJSON(
             'GET, POST, PUT, DELETE, OPTIONS',
 
         'Access-Control-Allow-Headers':
-            'Content-Type'
+            'Content-Type, Authorization',
+
+        'Cache-Control':
+            'no-cache'
     });
 
     res.end(
         JSON.stringify(data)
     );
-}
-
-// ========================================
-// INIT DATABASE
-// ========================================
-
-async function initDB() {
-
-    let connection;
-
-    try {
-
-        connection =
-            await pool.getConnection();
-
-        console.log(
-            'Connected to MySQL Aiven'
-        );
-
-        // ========================================
-        // CREATE TABLE
-        // ========================================
-
-        await connection.query(`
-
-            CREATE TABLE IF NOT EXISTS pokemon (
-
-                id INT PRIMARY KEY AUTO_INCREMENT,
-
-                nombre VARCHAR(100) NOT NULL,
-
-                altura DECIMAL(5,2),
-
-                peso DECIMAL(5,2),
-
-                habilidades JSON,
-
-                imagen_frontal TEXT,
-
-                imagen_trasera TEXT
-
-            )
-
-        `);
-
-        // ========================================
-        // VERIFY DATA
-        // ========================================
-
-        const [rows] =
-            await connection.query(`
-
-                SELECT COUNT(*) AS total
-
-                FROM pokemon
-
-            `);
-
-        // ========================================
-        // INSERT DATA
-        // ========================================
-
-        if (rows[0].total === 0) {
-
-            console.log(
-                'Insertando Pokémon...'
-            );
-
-            const pokemonData = [
-
-                [
-                    'Pikachu',
-                    0.40,
-                    6.00,
-                    '["Static","Lightning Rod"]',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/25.png'
-                ],
-
-                [
-                    'Bulbasaur',
-                    0.70,
-                    6.90,
-                    '["Overgrow","Chlorophyll"]',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/1.png'
-                ],
-
-                [
-                    'Charmander',
-                    0.60,
-                    8.50,
-                    '["Blaze","Solar Power"]',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/4.png'
-                ],
-
-                [
-                    'Squirtle',
-                    0.50,
-                    9.00,
-                    '["Torrent","Rain Dish"]',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/7.png'
-                ],
-
-                [
-                    'Gengar',
-                    1.50,
-                    40.50,
-                    '["Cursed Body"]',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/94.png',
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/94.png'
-                ]
-
-            ];
-
-            await connection.query(`
-
-                INSERT INTO pokemon
-                (
-                    nombre,
-                    altura,
-                    peso,
-                    habilidades,
-                    imagen_frontal,
-                    imagen_trasera
-                )
-
-                VALUES ?
-
-            `, [pokemonData]);
-
-            console.log(
-                'Pokémon insertados correctamente'
-            );
-        }
-
-    } catch (error) {
-
-        console.error(
-            'DATABASE ERROR:',
-            error
-        );
-
-    } finally {
-
-        if (connection) {
-
-            connection.release();
-        }
-    }
 }
 
 // ========================================
@@ -272,68 +133,81 @@ function getSwaggerHTML(swaggerDocument) {
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <title>
-        Pokemon API Docs
-    </title>
+<title>
+Pokemon API Docs
+</title>
 
-    <link
-        rel="stylesheet"
-        href="https://unpkg.com/swagger-ui-dist/swagger-ui.css"
-    >
+<link
+rel="stylesheet"
+href="https://unpkg.com/swagger-ui-dist/swagger-ui.css"
+/>
 
-    <style>
+<style>
 
-        body {
+html {
 
-            margin: 0;
+    box-sizing: border-box;
 
-            background: #0f172a;
-        }
+    overflow-y: scroll;
+}
 
-        .topbar {
+*,
+*:before,
+*:after {
 
-            display: none;
-        }
+    box-sizing: inherit;
+}
 
-    </style>
+body {
+
+    margin: 0;
+
+    background: #0f172a;
+}
+
+.topbar {
+
+    display: none;
+}
+
+</style>
 
 </head>
 
 <body>
 
-    <div id="swagger-ui"></div>
+<div id="swagger-ui"></div>
 
-    <script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+<script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
 
-    <script>
+<script>
 
-        window.onload = () => {
+window.onload = () => {
 
-            SwaggerUIBundle({
+    SwaggerUIBundle({
 
-                spec: ${JSON.stringify(swaggerDocument)},
+        url: '/swagger.json',
 
-                dom_id: '#swagger-ui',
+        dom_id: '#swagger-ui',
 
-                deepLinking: true,
+        deepLinking: true,
 
-                presets: [
-                    SwaggerUIBundle.presets.apis
-                ]
+        presets: [
+            SwaggerUIBundle.presets.apis
+        ],
 
-            });
+        layout: "BaseLayout"
+    });
+};
 
-        };
-
-    </script>
+</script>
 
 </body>
 
 </html>
-
-    `;
+`;
 }
 
 // ========================================
@@ -361,7 +235,7 @@ const server = http.createServer(
                     'GET, POST, PUT, DELETE, OPTIONS',
 
                 'Access-Control-Allow-Headers':
-                    'Content-Type'
+                    'Content-Type, Authorization'
             });
 
             return res.end();
@@ -402,6 +276,9 @@ const server = http.createServer(
                         status:
                             'Running',
 
+                        environment:
+                            process.env.NODE_ENV || 'development',
+
                         database:
                             'MySQL Aiven',
 
@@ -411,7 +288,7 @@ const server = http.createServer(
                                 '/api/pokemon',
 
                             pokemonById:
-                                '/api/pokemon/:id',
+                                '/api/pokemon/1',
 
                             health:
                                 '/health',
@@ -450,7 +327,10 @@ const server = http.createServer(
                                 'ok',
 
                             database:
-                                'connected'
+                                'connected',
+
+                            uptime:
+                                process.uptime()
                         }
                     );
 
@@ -635,18 +515,17 @@ const server = http.createServer(
                     );
                 }
 
-                const html =
-                    getSwaggerHTML(
-                        swaggerDocument
-                    );
-
                 res.writeHead(200, {
 
                     'Content-Type':
                         'text/html'
                 });
 
-                return res.end(html);
+                return res.end(
+                    getSwaggerHTML(
+                        swaggerDocument
+                    )
+                );
             }
 
             // ========================================
@@ -694,6 +573,8 @@ server.listen(
 
     PORT,
 
+    HOST,
+
     async () => {
 
         console.log(`
@@ -702,29 +583,43 @@ server.listen(
  POKEMON MICROSERVICE RUNNING
 ========================================
 
+ENV:
+${process.env.NODE_ENV || 'development'}
+
 PORT:
-http://localhost:${PORT}
+${PORT}
+
+HOST:
+${HOST}
 
 API:
 http://localhost:${PORT}/api/pokemon
 
-POKEMON BY ID:
-http://localhost:${PORT}/api/pokemon/1
-
-HEALTH:
-http://localhost:${PORT}/health
-
-SWAGGER UI:
+SWAGGER:
 http://localhost:${PORT}/api-docs
-
-SWAGGER JSON:
-http://localhost:${PORT}/swagger.json
 
 ========================================
 
         `);
 
-        await initDB();
+        try {
+
+            const connection =
+                await pool.getConnection();
+
+            console.log(
+                'MySQL Connected'
+            );
+
+            connection.release();
+
+        } catch (dbError) {
+
+            console.error(
+                'Database connection error:',
+                dbError
+            );
+        }
     }
 );
 
