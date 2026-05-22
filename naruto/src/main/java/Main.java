@@ -32,7 +32,7 @@ public class Main {
             "https://ujskykirumlohkquuqzh.supabase.co/rest/v1/characters?select=*";
 
     private static final String SUPABASE_KEY =
-            "TU_SUPABASE_KEY";
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqc2t5a2lydW1sb2hrcXV1cXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTA5NTAsImV4cCI6MjA5MzU4Njk1MH0.BW2NVoaiwngyCgassAnVPkl2-bRkVw84Q1afiVQA9vA";
 
     // ======================================
     // HTTP CLIENT
