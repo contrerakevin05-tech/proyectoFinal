@@ -1,318 +1,210 @@
-{
-  "openapi": "3.0.0",
+<?xml version="1.0" encoding="UTF-8"?>
 
-  "info": {
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 
-    "title": "Naruto API",
+         xsi:schemaLocation="
+         http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-    "version": "1.0.0",
+    <!-- ======================================
+         MODEL
+    ======================================= -->
 
-    "description":
-      "Microservicio Naruto usando Java + Supabase",
+    <modelVersion>4.0.0</modelVersion>
 
-    "contact": {
+    <!-- ======================================
+         PROJECT INFO
+    ======================================= -->
 
-      "name": "AnimeVerse API",
+    <groupId>com.naruto</groupId>
 
-      "email": "support@animeverse.com"
-    }
-  },
+    <artifactId>naruto-service</artifactId>
 
-  "servers": [
+    <version>1.0-SNAPSHOT</version>
 
-    {
+    <packaging>jar</packaging>
 
-      "url": "https://proyectofinal-1-ai7r.onrender.com",
+    <name>Naruto Service</name>
 
-      "description": "Servidor Producción"
-    },
+    <!-- ======================================
+         JAVA VERSION
+    ======================================= -->
 
-    {
+    <properties>
 
-      "url": "http://localhost:3002",
+        <project.build.sourceEncoding>
+            UTF-8
+        </project.build.sourceEncoding>
 
-      "description": "Servidor Local"
-    }
-  ],
+        <maven.compiler.source>
+            17
+        </maven.compiler.source>
 
-  "tags": [
+        <maven.compiler.target>
+            17
+        </maven.compiler.target>
 
-    {
+    </properties>
 
-      "name": "Naruto",
+    <!-- ======================================
+         DEPENDENCIES
+    ======================================= -->
 
-      "description":
-        "Operaciones relacionadas con personajes Naruto"
-    },
+    <dependencies>
 
-    {
+        <!-- SPARK JAVA -->
 
-      "name": "System",
+        <dependency>
 
-      "description":
-        "Estado del sistema"
-    }
-  ],
+            <groupId>com.sparkjava</groupId>
 
-  "paths": {
+            <artifactId>spark-core</artifactId>
 
-    "/": {
+            <version>2.9.4</version>
 
-      "get": {
+        </dependency>
 
-        "tags": [
-          "System"
-        ],
+        <!-- GSON -->
 
-        "summary":
-          "Home API",
+        <dependency>
 
-        "description":
-          "Endpoint principal del microservicio",
+            <groupId>com.google.code.gson</groupId>
 
-        "responses": {
+            <artifactId>gson</artifactId>
 
-          "200": {
+            <version>2.10.1</version>
 
-            "description":
-              "API funcionando correctamente",
+        </dependency>
 
-            "content": {
+        <!-- POSTGRESQL -->
 
-              "application/json": {
+        <dependency>
 
-                "schema": {
+            <groupId>org.postgresql</groupId>
 
-                  "$ref":
-                    "#/components/schemas/HomeResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
+            <artifactId>postgresql</artifactId>
 
-    "/health": {
+            <version>42.7.3</version>
 
-      "get": {
+        </dependency>
 
-        "tags": [
-          "System"
-        ],
+    </dependencies>
 
-        "summary":
-          "Health Check",
+    <!-- ======================================
+         BUILD
+    ======================================= -->
 
-        "description":
-          "Verifica el estado del servidor",
+    <build>
 
-        "responses": {
+        <finalName>
+            naruto-service-1.0-SNAPSHOT
+        </finalName>
 
-          "200": {
+        <plugins>
 
-            "description":
-              "Servidor funcionando",
+            <!-- COMPILER -->
 
-            "content": {
+            <plugin>
 
-              "application/json": {
+                <groupId>
+                    org.apache.maven.plugins
+                </groupId>
 
-                "schema": {
+                <artifactId>
+                    maven-compiler-plugin
+                </artifactId>
 
-                  "$ref":
-                    "#/components/schemas/HealthResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
+                <version>
+                    3.11.0
+                </version>
 
-    "/api/naruto": {
+                <configuration>
 
-      "get": {
+                    <source>
+                        17
+                    </source>
 
-        "tags": [
-          "Naruto"
-        ],
+                    <target>
+                        17
+                    </target>
 
-        "summary":
-          "Obtener personajes Naruto",
+                </configuration>
 
-        "description":
-          "Devuelve todos los personajes almacenados en Supabase",
+            </plugin>
 
-        "responses": {
+            <!-- FAT JAR -->
 
-          "200": {
+            <plugin>
 
-            "description":
-              "Lista de personajes",
+                <groupId>
+                    org.apache.maven.plugins
+                </groupId>
 
-            "content": {
+                <artifactId>
+                    maven-assembly-plugin
+                </artifactId>
 
-              "application/json": {
+                <version>
+                    3.6.0
+                </version>
 
-                "schema": {
+                <configuration>
 
-                  "type": "array",
+                    <archive>
 
-                  "items": {
+                        <manifest>
 
-                    "$ref":
-                      "#/components/schemas/Character"
-                  }
-                }
-              }
-            }
-          },
+                            <mainClass>
+                                Main
+                            </mainClass>
 
-          "500": {
+                        </manifest>
 
-            "description":
-              "Error interno del servidor"
-          }
-        }
-      }
-    }
-  },
+                    </archive>
 
-  "components": {
+                    <descriptorRefs>
 
-    "schemas": {
+                        <descriptorRef>
+                            jar-with-dependencies
+                        </descriptorRef>
 
-      "Character": {
+                    </descriptorRefs>
 
-        "type": "object",
+                    <appendAssemblyId>
+                        true
+                    </appendAssemblyId>
 
-        "properties": {
+                </configuration>
 
-          "id": {
+                <executions>
 
-            "type": "integer",
+                    <execution>
 
-            "example": 1
-          },
+                        <id>
+                            make-assembly
+                        </id>
 
-          "name": {
+                        <phase>
+                            package
+                        </phase>
 
-            "type": "string",
+                        <goals>
 
-            "example": "Naruto Uzumaki"
-          },
+                            <goal>
+                                single
+                            </goal>
 
-          "village": {
+                        </goals>
 
-            "type": "string",
+                    </execution>
 
-            "example": "Konoha"
-          },
+                </executions>
 
-          "role": {
+            </plugin>
 
-            "type": "string",
+        </plugins>
 
-            "example": "Hokage"
-          },
+    </build>
 
-          "chakra_level": {
-
-            "type": "integer",
-
-            "example": 9500
-          },
-
-          "image": {
-
-            "type": "string",
-
-            "example":
-              "https://i.imgur.com/8Qf6XGf.png"
-          }
-        },
-
-        "required": [
-
-          "id",
-
-          "name",
-
-          "village",
-
-          "role"
-        ]
-      },
-
-      "HealthResponse": {
-
-        "type": "object",
-
-        "properties": {
-
-          "status": {
-
-            "type": "string",
-
-            "example": "ok"
-          }
-        }
-      },
-
-      "HomeResponse": {
-
-        "type": "object",
-
-        "properties": {
-
-          "service": {
-
-            "type": "string",
-
-            "example": "Naruto API"
-          },
-
-          "status": {
-
-            "type": "string",
-
-            "example": "Running"
-          },
-
-          "endpoints": {
-
-            "type": "object",
-
-            "properties": {
-
-              "api": {
-
-                "type": "string",
-
-                "example":
-                  "/api/naruto"
-              },
-
-              "health": {
-
-                "type": "string",
-
-                "example":
-                  "/health"
-              },
-
-              "swagger": {
-
-                "type": "string",
-
-                "example":
-                  "/api-docs"
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
+</project>
