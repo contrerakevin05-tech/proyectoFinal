@@ -1,86 +1,191 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+
+         xsi:schemaLocation="
+         http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <!-- ======================================
+         MODEL
+    ======================================= -->
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- ======================================
+         PROJECT INFO
+    ======================================= -->
+
     <groupId>com.naruto</groupId>
 
-    <artifactId>naruto</artifactId>
+    <artifactId>naruto-service</artifactId>
 
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
 
     <packaging>jar</packaging>
 
+    <name>Naruto Service</name>
+
+    <description>
+        Microservicio Naruto con Java + Supabase
+    </description>
+
+    <!-- ======================================
+         PROPERTIES
+    ======================================= -->
+
+    <properties>
+
+        <project.build.sourceEncoding>
+            UTF-8
+        </project.build.sourceEncoding>
+
+        <maven.compiler.source>
+            17
+        </maven.compiler.source>
+
+        <maven.compiler.target>
+            17
+        </maven.compiler.target>
+
+    </properties>
+
+    <!-- ======================================
+         DEPENDENCIES
+    ======================================= -->
+
     <dependencies>
 
-        <!-- SparkJava -->
+        <!-- ======================================
+             SPARK JAVA
+        ======================================= -->
+
         <dependency>
+
             <groupId>com.sparkjava</groupId>
+
             <artifactId>spark-core</artifactId>
+
             <version>2.9.4</version>
+
         </dependency>
 
-        <!-- Gson -->
+        <!-- ======================================
+             GSON
+        ======================================= -->
+
         <dependency>
+
             <groupId>com.google.code.gson</groupId>
+
             <artifactId>gson</artifactId>
+
             <version>2.10.1</version>
+
         </dependency>
 
-        <!-- PostgreSQL -->
+        <!-- ======================================
+             POSTGRESQL
+        ======================================= -->
+
         <dependency>
+
             <groupId>org.postgresql</groupId>
+
             <artifactId>postgresql</artifactId>
+
             <version>42.7.3</version>
+
         </dependency>
 
     </dependencies>
 
+    <!-- ======================================
+         BUILD
+    ======================================= -->
+
     <build>
+
+        <!-- ======================================
+             FINAL JAR NAME
+        ======================================= -->
+
+        <finalName>
+            naruto-service-1.0-SNAPSHOT
+        </finalName>
 
         <plugins>
 
+            <!-- ======================================
+                 COMPILER
+            ======================================= -->
+
             <plugin>
 
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>
+                    org.apache.maven.plugins
+                </groupId>
 
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>
+                    maven-compiler-plugin
+                </artifactId>
 
-                <version>3.11.0</version>
+                <version>
+                    3.11.0
+                </version>
 
                 <configuration>
 
-                    <source>17</source>
+                    <source>
+                        17
+                    </source>
 
-                    <target>17</target>
+                    <target>
+                        17
+                    </target>
 
                 </configuration>
 
             </plugin>
 
-            <!-- CREA JAR EJECUTABLE -->
+            <!-- ======================================
+                 EXECUTABLE FAT JAR
+            ======================================= -->
 
             <plugin>
 
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>
+                    org.apache.maven.plugins
+                </groupId>
 
-                <artifactId>maven-assembly-plugin</artifactId>
+                <artifactId>
+                    maven-assembly-plugin
+                </artifactId>
 
-                <version>3.6.0</version>
+                <version>
+                    3.6.0
+                </version>
 
                 <configuration>
+
+                    <!-- ======================================
+                         MAIN CLASS
+                    ======================================= -->
 
                     <archive>
 
                         <manifest>
 
-                            <mainClass>Main</mainClass>
+                            <mainClass>
+                                Main
+                            </mainClass>
 
                         </manifest>
 
                     </archive>
+
+                    <!-- ======================================
+                         INCLUDE DEPENDENCIES
+                    ======================================= -->
 
                     <descriptorRefs>
 
@@ -90,19 +195,45 @@
 
                     </descriptorRefs>
 
+                    <!-- ======================================
+                         FINAL NAME
+                    ======================================= -->
+
+                    <finalName>
+                        naruto-service-1.0-SNAPSHOT
+                    </finalName>
+
+                    <!-- ======================================
+                         REMOVE "ASSEMBLY"
+                    ======================================= -->
+
+                    <appendAssemblyId>
+                        true
+                    </appendAssemblyId>
+
                 </configuration>
+
+                <!-- ======================================
+                     EXECUTION
+                ======================================= -->
 
                 <executions>
 
                     <execution>
 
-                        <id>make-assembly</id>
+                        <id>
+                            make-assembly
+                        </id>
 
-                        <phase>package</phase>
+                        <phase>
+                            package
+                        </phase>
 
                         <goals>
 
-                            <goal>single</goal>
+                            <goal>
+                                single
+                            </goal>
 
                         </goals>
 
