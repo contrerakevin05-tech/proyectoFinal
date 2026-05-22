@@ -11,7 +11,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # ======================================
-# COPY FILES
+# COPY PROJECT FILES
 # ======================================
 
 COPY pom.xml .
@@ -21,7 +21,7 @@ COPY src ./src
 COPY swagger.json .
 
 # ======================================
-# BUILD MAVEN
+# BUILD PROJECT
 # ======================================
 
 RUN mvn clean package -DskipTests
@@ -39,10 +39,10 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 
 # ======================================
-# COPY JAR
+# COPY FAT JAR
 # ======================================
 
-COPY --from=build /app/target/naruto-service-1.0-SNAPSHOT.jar app.jar
+COPY --from=build /app/target/naruto-service-1.0-SNAPSHOT-jar-with-dependencies.jar app.jar
 
 # ======================================
 # COPY SWAGGER
@@ -51,13 +51,25 @@ COPY --from=build /app/target/naruto-service-1.0-SNAPSHOT.jar app.jar
 COPY swagger.json .
 
 # ======================================
-# PORT
+# RENDER PORT
+# ======================================
+
+ENV PORT=3002
+
+# ======================================
+# EXPOSE PORT
 # ======================================
 
 EXPOSE 3002
 
 # ======================================
-# START APP
+# JAVA OPTIMIZATION
 # ======================================
 
-CMD ["java", "-jar", "app.jar"]
+ENV JAVA_OPTS="-Xms256m -Xmx512m"
+
+# ======================================
+# START APPLICATION
+# ======================================
+
+CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
