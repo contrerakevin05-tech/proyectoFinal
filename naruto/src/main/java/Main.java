@@ -13,7 +13,9 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 import java.nio.charset.StandardCharsets;
+
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import java.time.Duration;
@@ -21,7 +23,7 @@ import java.time.Duration;
 public class Main {
 
     // =========================================
-    // CONFIGURACIÓN SUPABASE
+    // SUPABASE CONFIG
     // =========================================
 
     private static final String SUPABASE_URL =
@@ -31,34 +33,67 @@ public class Main {
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqc2t5a2lydW1sb2hrcXV1cXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTA5NTAsImV4cCI6MjA5MzU4Njk1MH0.BW2NVoaiwngyCgassAnVPkl2-bRkVw84Q1afiVQA9vA";
 
     // =========================================
-    // CLIENTE HTTP
+    // HTTP CLIENT
     // =========================================
 
     private static final HttpClient client =
             HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(10))
+
+                    .connectTimeout(
+                            Duration.ofSeconds(15)
+                    )
+
                     .build();
 
     // =========================================
     // MAIN
     // =========================================
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)
+            throws Exception {
+
+        // =========================================
+        // PORT RENDER
+        // =========================================
 
         int port =
-                System.getenv("PORT") != null
-                        ? Integer.parseInt(System.getenv("PORT"))
-                        : 8081;
+                Integer.parseInt(
+
+                        System.getenv()
+                                .getOrDefault(
+                                        "PORT",
+                                        "3002"
+                                )
+                );
+
+        // =========================================
+        // CREATE SERVER
+        // =========================================
 
         HttpServer server =
                 HttpServer.create(
-                        new InetSocketAddress(port),
+
+                        new InetSocketAddress(
+                                "0.0.0.0",
+                                port
+                        ),
+
                         0
                 );
 
         // =========================================
-        // ENDPOINTS
+        // ROUTES
         // =========================================
+
+        server.createContext(
+                "/",
+                new HomeHandler()
+        );
+
+        server.createContext(
+                "/health",
+                new HealthHandler()
+        );
 
         server.createContext(
                 "/api/naruto",
@@ -66,81 +101,161 @@ public class Main {
         );
 
         server.createContext(
-                "/api-docs",
-                new SwaggerHandler()
+                "/swagger.json",
+                new SwaggerJsonHandler()
         );
 
-        server.setExecutor(null);
+        server.createContext(
+                "/api-docs",
+                new SwaggerUIHandler()
+        );
 
-        System.out.println("=======================================");
-        System.out.println("NARUTO MICROSERVICE RUNNING");
-        System.out.println("PORT: " + port);
-        System.out.println("URL: http://localhost:" + port + "/api/naruto");
-        System.out.println("=======================================");
+        // =========================================
+        // EXECUTOR
+        // =========================================
+
+        server.setExecutor(
+                java.util.concurrent.Executors
+                        .newCachedThreadPool()
+        );
+
+        // =========================================
+        // START
+        // =========================================
 
         server.start();
+
+        System.out.println(
+                """
+                
+=======================================
+ NARUTO MICROSERVICE RUNNING
+=======================================
+
+PORT:
+""" + port + """
+
+HEALTH:
+/health
+
+API:
+/api/naruto
+
+SWAGGER:
+/api-docs
+
+=======================================
+
+"""
+        );
+    }
+
+    // =========================================
+    // HOME
+    // =========================================
+
+    static class HomeHandler
+            implements HttpHandler {
+
+        @Override
+        public void handle(
+                HttpExchange exchange
+        ) throws IOException {
+
+            addCors(exchange);
+
+            sendResponse(
+                    exchange,
+                    200,
+                    """
+                    {
+                        "service":"Naruto API",
+                        "status":"Running",
+                        "endpoints":{
+                            "api":"/api/naruto",
+                            "health":"/health",
+                            "swagger":"/api-docs"
+                        }
+                    }
+                    """
+            );
+        }
+    }
+
+    // =========================================
+    // HEALTH
+    // =========================================
+
+    static class HealthHandler
+            implements HttpHandler {
+
+        @Override
+        public void handle(
+                HttpExchange exchange
+        ) throws IOException {
+
+            addCors(exchange);
+
+            sendResponse(
+                    exchange,
+                    200,
+                    """
+                    {
+                        "status":"ok"
+                    }
+                    """
+            );
+        }
     }
 
     // =========================================
     // NARUTO HANDLER
     // =========================================
 
-    static class NarutoHandler implements HttpHandler {
+    static class NarutoHandler
+            implements HttpHandler {
 
         @Override
-        public void handle(HttpExchange exchange)
-                throws IOException {
+        public void handle(
+                HttpExchange exchange
+        ) throws IOException {
 
-            // =========================================
-            // CORS
-            // =========================================
-
-            exchange.getResponseHeaders().add(
-                    "Access-Control-Allow-Origin",
-                    "*"
-            );
-
-            exchange.getResponseHeaders().add(
-                    "Access-Control-Allow-Methods",
-                    "GET, OPTIONS"
-            );
-
-            exchange.getResponseHeaders().add(
-                    "Access-Control-Allow-Headers",
-                    "Content-Type, Authorization"
-            );
-
-            exchange.getResponseHeaders().add(
-                    "Content-Type",
-                    "application/json; charset=UTF-8"
-            );
+            addCors(exchange);
 
             // =========================================
             // OPTIONS
             // =========================================
 
-            if ("OPTIONS".equalsIgnoreCase(
-                    exchange.getRequestMethod()
-            )) {
+            if (
+                    "OPTIONS".equalsIgnoreCase(
+                            exchange.getRequestMethod()
+                    )
+            ) {
 
-                exchange.sendResponseHeaders(204, -1);
+                exchange.sendResponseHeaders(
+                        204,
+                        -1
+                );
+
                 return;
             }
 
             // =========================================
-            // VALIDAR MÉTODO
+            // ONLY GET
             // =========================================
 
-            if (!"GET".equalsIgnoreCase(
-                    exchange.getRequestMethod()
-            )) {
+            if (
+                    !"GET".equalsIgnoreCase(
+                            exchange.getRequestMethod()
+                    )
+            ) {
 
                 sendResponse(
                         exchange,
                         405,
                         """
                         {
-                            "error":"Método no permitido"
+                            "error":"Method Not Allowed"
                         }
                         """
                 );
@@ -151,42 +266,54 @@ public class Main {
             try {
 
                 // =========================================
-                // REQUEST SUPABASE
+                // REQUEST
                 // =========================================
 
                 HttpRequest request =
                         HttpRequest.newBuilder()
+
                                 .uri(
                                         URI.create(
                                                 SUPABASE_URL
                                         )
                                 )
+
                                 .timeout(
-                                        Duration.ofSeconds(15)
+                                        Duration.ofSeconds(
+                                                20
+                                        )
                                 )
+
                                 .header(
                                         "apikey",
                                         SUPABASE_KEY
                                 )
+
                                 .header(
                                         "Authorization",
                                         "Bearer " + SUPABASE_KEY
                                 )
+
                                 .header(
                                         "Content-Type",
                                         "application/json"
                                 )
+
                                 .GET()
+
                                 .build();
 
                 // =========================================
-                // ENVIAR REQUEST
+                // SEND REQUEST
                 // =========================================
 
                 HttpResponse<String> response =
                         client.send(
+
                                 request,
-                                HttpResponse.BodyHandlers.ofString()
+
+                                HttpResponse.BodyHandlers
+                                        .ofString()
                         );
 
                 int statusCode =
@@ -196,27 +323,26 @@ public class Main {
                         response.body();
 
                 System.out.println(
-                        "SUPABASE STATUS: " + statusCode
+                        "SUPABASE STATUS: " +
+                                statusCode
                 );
 
                 // =========================================
-                // VALIDAR RESPUESTA
+                // SUCCESS
                 // =========================================
 
-                if (statusCode >= 200 &&
-                        statusCode < 300) {
+                if (
+                        statusCode >= 200 &&
+                                statusCode < 300
+                ) {
 
                     sendResponse(
                             exchange,
-                            statusCode,
+                            200,
                             responseBody
                     );
 
                 } else {
-
-                    System.out.println(
-                            "SUPABASE ERROR:"
-                    );
 
                     System.out.println(
                             responseBody
@@ -227,7 +353,7 @@ public class Main {
                             500,
                             """
                             {
-                                "error":"Error obteniendo datos de Supabase"
+                                "error":"Supabase Error"
                             }
                             """
                     );
@@ -242,7 +368,7 @@ public class Main {
                         500,
                         """
                         {
-                            "error":"Error interno del servidor"
+                            "error":"Internal Server Error"
                         }
                         """
                 );
@@ -251,30 +377,32 @@ public class Main {
     }
 
     // =========================================
-    // SWAGGER HANDLER
+    // SWAGGER JSON
     // =========================================
 
-    static class SwaggerHandler implements HttpHandler {
+    static class SwaggerJsonHandler
+            implements HttpHandler {
 
         @Override
-        public void handle(HttpExchange exchange)
-                throws IOException {
+        public void handle(
+                HttpExchange exchange
+        ) throws IOException {
 
-            exchange.getResponseHeaders().add(
-                    "Access-Control-Allow-Origin",
-                    "*"
-            );
-
-            exchange.getResponseHeaders().add(
-                    "Content-Type",
-                    "application/json"
-            );
+            addCors(exchange);
 
             try {
 
+                Path swaggerPath =
+                        Paths.get(
+                                System.getProperty(
+                                        "user.dir"
+                                ),
+                                "swagger.json"
+                        );
+
                 String content =
                         Files.readString(
-                                Paths.get("swagger.json")
+                                swaggerPath
                         );
 
                 sendResponse(
@@ -290,7 +418,7 @@ public class Main {
                         404,
                         """
                         {
-                            "error":"swagger.json no encontrado"
+                            "error":"swagger.json not found"
                         }
                         """
                 );
@@ -299,13 +427,125 @@ public class Main {
     }
 
     // =========================================
+    // SWAGGER UI
+    // =========================================
+
+    static class SwaggerUIHandler
+            implements HttpHandler {
+
+        @Override
+        public void handle(
+                HttpExchange exchange
+        ) throws IOException {
+
+            addCors(exchange);
+
+            String html =
+                    """
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Naruto API Docs</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/swagger-ui-dist/swagger-ui.css">
+
+<style>
+
+body{
+    margin:0;
+    background:#0f172a;
+}
+
+.topbar{
+    display:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="swagger-ui"></div>
+
+<script src="https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js"></script>
+
+<script>
+
+window.onload = () => {
+
+    SwaggerUIBundle({
+
+        url:'/swagger.json',
+
+        dom_id:'#swagger-ui'
+
+    });
+
+};
+
+</script>
+
+</body>
+</html>
+""";
+
+            exchange.getResponseHeaders().add(
+                    "Content-Type",
+                    "text/html"
+            );
+
+            sendResponse(
+                    exchange,
+                    200,
+                    html
+            );
+        }
+    }
+
+    // =========================================
+    // CORS
+    // =========================================
+
+    private static void addCors(
+            HttpExchange exchange
+    ) {
+
+        exchange.getResponseHeaders().add(
+                "Access-Control-Allow-Origin",
+                "*"
+        );
+
+        exchange.getResponseHeaders().add(
+                "Access-Control-Allow-Methods",
+                "GET, POST, OPTIONS"
+        );
+
+        exchange.getResponseHeaders().add(
+                "Access-Control-Allow-Headers",
+                "Content-Type, Authorization"
+        );
+
+        exchange.getResponseHeaders().add(
+                "Content-Type",
+                "application/json; charset=UTF-8"
+        );
+    }
+
+    // =========================================
     // SEND RESPONSE
     // =========================================
 
     private static void sendResponse(
+
             HttpExchange exchange,
+
             int statusCode,
+
             String response
+
     ) throws IOException {
 
         byte[] bytes =
@@ -319,8 +559,10 @@ public class Main {
         );
 
         try (
+
                 OutputStream os =
                         exchange.getResponseBody()
+
         ) {
 
             os.write(bytes);
