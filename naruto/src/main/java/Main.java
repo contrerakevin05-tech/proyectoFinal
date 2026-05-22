@@ -20,21 +20,23 @@ import java.nio.file.Paths;
 
 import java.time.Duration;
 
+import java.util.concurrent.Executors;
+
 public class Main {
 
-    // =========================================
-    // SUPABASE CONFIG
-    // =========================================
+    // ======================================
+    // SUPABASE
+    // ======================================
 
     private static final String SUPABASE_URL =
             "https://ujskykirumlohkquuqzh.supabase.co/rest/v1/characters?select=*";
 
     private static final String SUPABASE_KEY =
-            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVqc2t5a2lydW1sb2hrcXV1cXpoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgwMTA5NTAsImV4cCI6MjA5MzU4Njk1MH0.BW2NVoaiwngyCgassAnVPkl2-bRkVw84Q1afiVQA9vA";
+            "TU_SUPABASE_KEY";
 
-    // =========================================
+    // ======================================
     // HTTP CLIENT
-    // =========================================
+    // ======================================
 
     private static final HttpClient client =
             HttpClient.newBuilder()
@@ -45,16 +47,16 @@ public class Main {
 
                     .build();
 
-    // =========================================
+    // ======================================
     // MAIN
-    // =========================================
+    // ======================================
 
     public static void main(String[] args)
             throws Exception {
 
-        // =========================================
+        // ======================================
         // PORT RENDER
-        // =========================================
+        // ======================================
 
         int port =
                 Integer.parseInt(
@@ -66,9 +68,9 @@ public class Main {
                                 )
                 );
 
-        // =========================================
-        // CREATE SERVER
-        // =========================================
+        // ======================================
+        // SERVER
+        // ======================================
 
         HttpServer server =
                 HttpServer.create(
@@ -81,9 +83,9 @@ public class Main {
                         0
                 );
 
-        // =========================================
+        // ======================================
         // ROUTES
-        // =========================================
+        // ======================================
 
         server.createContext(
                 "/",
@@ -110,36 +112,35 @@ public class Main {
                 new SwaggerUIHandler()
         );
 
-        // =========================================
+        // ======================================
         // EXECUTOR
-        // =========================================
+        // ======================================
 
         server.setExecutor(
-                java.util.concurrent.Executors
-                        .newCachedThreadPool()
+                Executors.newCachedThreadPool()
         );
 
-        // =========================================
+        // ======================================
         // START
-        // =========================================
+        // ======================================
 
         server.start();
 
         System.out.println(
                 """
-                
+
 =======================================
- NARUTO MICROSERVICE RUNNING
+ NARUTO API RUNNING
 =======================================
 
 PORT:
 """ + port + """
 
-HEALTH:
-/health
-
 API:
 /api/naruto
+
+HEALTH:
+/health
 
 SWAGGER:
 /api-docs
@@ -150,9 +151,9 @@ SWAGGER:
         );
     }
 
-    // =========================================
+    // ======================================
     // HOME
-    // =========================================
+    // ======================================
 
     static class HomeHandler
             implements HttpHandler {
@@ -162,29 +163,32 @@ SWAGGER:
                 HttpExchange exchange
         ) throws IOException {
 
-            addCors(exchange);
+            handleCors(exchange);
 
-            sendResponse(
+            sendJson(
+
                     exchange,
+
                     200,
+
                     """
                     {
-                        "service":"Naruto API",
-                        "status":"Running",
-                        "endpoints":{
-                            "api":"/api/naruto",
-                            "health":"/health",
-                            "swagger":"/api-docs"
-                        }
+                      "service":"Naruto API",
+                      "status":"Running",
+                      "endpoints":{
+                        "api":"/api/naruto",
+                        "health":"/health",
+                        "swagger":"/api-docs"
+                      }
                     }
                     """
             );
         }
     }
 
-    // =========================================
+    // ======================================
     // HEALTH
-    // =========================================
+    // ======================================
 
     static class HealthHandler
             implements HttpHandler {
@@ -194,23 +198,26 @@ SWAGGER:
                 HttpExchange exchange
         ) throws IOException {
 
-            addCors(exchange);
+            handleCors(exchange);
 
-            sendResponse(
+            sendJson(
+
                     exchange,
+
                     200,
+
                     """
                     {
-                        "status":"ok"
+                      "status":"ok"
                     }
                     """
             );
         }
     }
 
-    // =========================================
-    // NARUTO HANDLER
-    // =========================================
+    // ======================================
+    // API
+    // ======================================
 
     static class NarutoHandler
             implements HttpHandler {
@@ -220,11 +227,9 @@ SWAGGER:
                 HttpExchange exchange
         ) throws IOException {
 
-            addCors(exchange);
+            handleCors(exchange);
 
-            // =========================================
             // OPTIONS
-            // =========================================
 
             if (
                     "OPTIONS".equalsIgnoreCase(
@@ -240,9 +245,7 @@ SWAGGER:
                 return;
             }
 
-            // =========================================
             // ONLY GET
-            // =========================================
 
             if (
                     !"GET".equalsIgnoreCase(
@@ -250,12 +253,15 @@ SWAGGER:
                     )
             ) {
 
-                sendResponse(
+                sendJson(
+
                         exchange,
+
                         405,
+
                         """
                         {
-                            "error":"Method Not Allowed"
+                          "error":"Method Not Allowed"
                         }
                         """
                 );
@@ -265,11 +271,8 @@ SWAGGER:
 
             try {
 
-                // =========================================
-                // REQUEST
-                // =========================================
-
                 HttpRequest request =
+
                         HttpRequest.newBuilder()
 
                                 .uri(
@@ -303,11 +306,8 @@ SWAGGER:
 
                                 .build();
 
-                // =========================================
-                // SEND REQUEST
-                // =========================================
-
                 HttpResponse<String> response =
+
                         client.send(
 
                                 request,
@@ -319,7 +319,7 @@ SWAGGER:
                 int statusCode =
                         response.statusCode();
 
-                String responseBody =
+                String body =
                         response.body();
 
                 System.out.println(
@@ -327,33 +327,32 @@ SWAGGER:
                                 statusCode
                 );
 
-                // =========================================
                 // SUCCESS
-                // =========================================
 
                 if (
                         statusCode >= 200 &&
                                 statusCode < 300
                 ) {
 
-                    sendResponse(
+                    sendJson(
                             exchange,
                             200,
-                            responseBody
+                            body
                     );
 
                 } else {
 
-                    System.out.println(
-                            responseBody
-                    );
+                    System.out.println(body);
 
-                    sendResponse(
+                    sendJson(
+
                             exchange,
+
                             500,
+
                             """
                             {
-                                "error":"Supabase Error"
+                              "error":"Supabase Error"
                             }
                             """
                     );
@@ -363,12 +362,15 @@ SWAGGER:
 
                 e.printStackTrace();
 
-                sendResponse(
+                sendJson(
+
                         exchange,
+
                         500,
+
                         """
                         {
-                            "error":"Internal Server Error"
+                          "error":"Internal Server Error"
                         }
                         """
                 );
@@ -376,9 +378,9 @@ SWAGGER:
         }
     }
 
-    // =========================================
+    // ======================================
     // SWAGGER JSON
-    // =========================================
+    // ======================================
 
     static class SwaggerJsonHandler
             implements HttpHandler {
@@ -388,11 +390,12 @@ SWAGGER:
                 HttpExchange exchange
         ) throws IOException {
 
-            addCors(exchange);
+            handleCors(exchange);
 
             try {
 
                 Path swaggerPath =
+
                         Paths.get(
                                 System.getProperty(
                                         "user.dir"
@@ -405,7 +408,7 @@ SWAGGER:
                                 swaggerPath
                         );
 
-                sendResponse(
+                sendJson(
                         exchange,
                         200,
                         content
@@ -413,12 +416,15 @@ SWAGGER:
 
             } catch (Exception e) {
 
-                sendResponse(
+                sendJson(
+
                         exchange,
+
                         404,
+
                         """
                         {
-                            "error":"swagger.json not found"
+                          "error":"swagger.json not found"
                         }
                         """
                 );
@@ -426,9 +432,9 @@ SWAGGER:
         }
     }
 
-    // =========================================
+    // ======================================
     // SWAGGER UI
-    // =========================================
+    // ======================================
 
     static class SwaggerUIHandler
             implements HttpHandler {
@@ -438,13 +444,14 @@ SWAGGER:
                 HttpExchange exchange
         ) throws IOException {
 
-            addCors(exchange);
+            handleCors(exchange);
 
-            String html =
-                    """
+            String html = """
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+
+<meta charset="UTF-8">
 
 <title>Naruto API Docs</title>
 
@@ -492,53 +499,62 @@ window.onload = () => {
 </html>
 """;
 
-            exchange.getResponseHeaders().add(
+            byte[] bytes =
+                    html.getBytes(
+                            StandardCharsets.UTF_8
+                    );
+
+            exchange.getResponseHeaders().set(
                     "Content-Type",
-                    "text/html"
+                    "text/html; charset=UTF-8"
             );
 
-            sendResponse(
-                    exchange,
+            exchange.sendResponseHeaders(
                     200,
-                    html
+                    bytes.length
             );
+
+            try (
+
+                    OutputStream os =
+                            exchange.getResponseBody()
+
+            ) {
+
+                os.write(bytes);
+            }
         }
     }
 
-    // =========================================
+    // ======================================
     // CORS
-    // =========================================
+    // ======================================
 
-    private static void addCors(
+    private static void handleCors(
             HttpExchange exchange
     ) {
 
-        exchange.getResponseHeaders().add(
+        exchange.getResponseHeaders().set(
                 "Access-Control-Allow-Origin",
                 "*"
         );
 
-        exchange.getResponseHeaders().add(
+        exchange.getResponseHeaders().set(
                 "Access-Control-Allow-Methods",
                 "GET, POST, OPTIONS"
         );
 
-        exchange.getResponseHeaders().add(
+        exchange.getResponseHeaders().set(
                 "Access-Control-Allow-Headers",
                 "Content-Type, Authorization"
         );
-
-        exchange.getResponseHeaders().add(
-                "Content-Type",
-                "application/json; charset=UTF-8"
-        );
     }
 
-    // =========================================
-    // SEND RESPONSE
-    // =========================================
+    // ======================================
+    // SEND JSON
+    // ======================================
 
-    private static void sendResponse(
+    private static void sendJson(
 
             HttpExchange exchange,
 
@@ -552,6 +568,11 @@ window.onload = () => {
                 response.getBytes(
                         StandardCharsets.UTF_8
                 );
+
+        exchange.getResponseHeaders().set(
+                "Content-Type",
+                "application/json; charset=UTF-8"
+        );
 
         exchange.sendResponseHeaders(
                 statusCode,
