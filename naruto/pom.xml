@@ -8,7 +8,7 @@
     "version": "1.0.0",
 
     "description":
-      "Microservicio Naruto usando Java + Supabase PostgreSQL",
+      "Microservicio Naruto usando Java + Supabase",
 
     "contact": {
 
@@ -22,7 +22,7 @@
 
     {
 
-      "url": "https://TU-NARUTO-API.onrender.com",
+      "url": "https://proyectofinal-1-ai7r.onrender.com",
 
       "description": "Servidor Producción"
     },
@@ -42,7 +42,7 @@
       "name": "Naruto",
 
       "description":
-        "Operaciones relacionadas con personajes de Naruto"
+        "Operaciones relacionadas con personajes Naruto"
     },
 
     {
@@ -50,7 +50,7 @@
       "name": "System",
 
       "description":
-        "Estado y salud del sistema"
+        "Estado del sistema"
     }
   ],
 
@@ -68,7 +68,7 @@
           "Home API",
 
         "description":
-          "Endpoint principal del microservicio Naruto",
+          "Endpoint principal del microservicio",
 
         "responses": {
 
@@ -105,14 +105,14 @@
           "Health Check",
 
         "description":
-          "Verifica el estado del microservicio",
+          "Verifica el estado del servidor",
 
         "responses": {
 
           "200": {
 
             "description":
-              "Servicio funcionando",
+              "Servidor funcionando",
 
             "content": {
 
@@ -139,17 +139,17 @@
         ],
 
         "summary":
-          "Obtener todos los personajes",
+          "Obtener personajes Naruto",
 
         "description":
-          "Devuelve una lista de personajes almacenados en Supabase",
+          "Devuelve todos los personajes almacenados en Supabase",
 
         "responses": {
 
           "200": {
 
             "description":
-              "Lista de personajes obtenida correctamente",
+              "Lista de personajes",
 
             "content": {
 
@@ -229,9 +229,20 @@
             "type": "string",
 
             "example":
-              "https://example.com/naruto.png"
+              "https://i.imgur.com/8Qf6XGf.png"
           }
-        }
+        },
+
+        "required": [
+
+          "id",
+
+          "name",
+
+          "village",
+
+          "role"
+        ]
       },
 
       "HealthResponse": {
