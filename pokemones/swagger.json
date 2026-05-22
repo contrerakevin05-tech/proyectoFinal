@@ -1,0 +1,411 @@
+{
+  "openapi": "3.0.0",
+
+  "info": {
+
+    "title": "Pokemon API",
+
+    "version": "1.0.0",
+
+    "description":
+      "Microservicio Pokemon usando Node.js + MySQL Aiven",
+
+    "contact": {
+
+      "name": "AnimeVerse API",
+
+      "email": "support@animeverse.com"
+    }
+  },
+
+  "servers": [
+
+    {
+
+      "url": "http://localhost:10000",
+
+      "description": "Servidor Local"
+    }
+  ],
+
+  "tags": [
+
+    {
+
+      "name": "Pokemon",
+
+      "description":
+        "Operaciones relacionadas con Pokémon"
+    },
+
+    {
+
+      "name": "System",
+
+      "description":
+        "Health checks y estado del sistema"
+    }
+  ],
+
+  "paths": {
+
+    "/": {
+
+      "get": {
+
+        "tags": [
+          "System"
+        ],
+
+        "summary":
+          "Home API",
+
+        "description":
+          "Endpoint principal del microservicio",
+
+        "responses": {
+
+          "200": {
+
+            "description":
+              "API funcionando correctamente",
+
+            "content": {
+
+              "application/json": {
+
+                "schema": {
+
+                  "$ref":
+                    "#/components/schemas/HomeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/health": {
+
+      "get": {
+
+        "tags": [
+          "System"
+        ],
+
+        "summary":
+          "Health Check",
+
+        "description":
+          "Verifica conexión con MySQL",
+
+        "responses": {
+
+          "200": {
+
+            "description":
+              "Base de datos conectada",
+
+            "content": {
+
+              "application/json": {
+
+                "schema": {
+
+                  "$ref":
+                    "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+
+          "500": {
+
+            "description":
+              "Error de conexión"
+          }
+        }
+      }
+    },
+
+    "/api/pokemon": {
+
+      "get": {
+
+        "tags": [
+          "Pokemon"
+        ],
+
+        "summary":
+          "Obtener todos los Pokemones",
+
+        "description":
+          "Devuelve una lista completa de Pokemones",
+
+        "responses": {
+
+          "200": {
+
+            "description":
+              "Lista de Pokemones",
+
+            "content": {
+
+              "application/json": {
+
+                "schema": {
+
+                  "type": "array",
+
+                  "items": {
+
+                    "$ref":
+                      "#/components/schemas/Pokemon"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "/api/pokemon/{id}": {
+
+      "get": {
+
+        "tags": [
+          "Pokemon"
+        ],
+
+        "summary":
+          "Obtener Pokemon por ID",
+
+        "description":
+          "Busca un Pokemon específico por ID",
+
+        "parameters": [
+
+          {
+
+            "name": "id",
+
+            "in": "path",
+
+            "required": true,
+
+            "description":
+              "ID del Pokemon",
+
+            "schema": {
+
+              "type": "integer",
+
+              "example": 1
+            }
+          }
+        ],
+
+        "responses": {
+
+          "200": {
+
+            "description":
+              "Pokemon encontrado",
+
+            "content": {
+
+              "application/json": {
+
+                "schema": {
+
+                  "$ref":
+                    "#/components/schemas/Pokemon"
+                }
+              }
+            }
+          },
+
+          "400": {
+
+            "description":
+              "ID inválido"
+          },
+
+          "404": {
+
+            "description":
+              "Pokemon no encontrado"
+          }
+        }
+      }
+    }
+  },
+
+  "components": {
+
+    "schemas": {
+
+      "Pokemon": {
+
+        "type": "object",
+
+        "properties": {
+
+          "id": {
+
+            "type": "integer",
+
+            "example": 1
+          },
+
+          "nombre": {
+
+            "type": "string",
+
+            "example": "Pikachu"
+          },
+
+          "altura": {
+
+            "type": "number",
+
+            "example": 0.4
+          },
+
+          "peso": {
+
+            "type": "number",
+
+            "example": 6
+          },
+
+          "habilidades": {
+
+            "type": "array",
+
+            "items": {
+
+              "type": "string"
+            },
+
+            "example": [
+
+              "Static",
+
+              "Lightning Rod"
+            ]
+          },
+
+          "imagen_frontal": {
+
+            "type": "string",
+
+            "example":
+              "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png"
+          },
+
+          "imagen_trasera": {
+
+            "type": "string",
+
+            "example":
+              "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/back/25.png"
+          }
+        }
+      },
+
+      "HealthResponse": {
+
+        "type": "object",
+
+        "properties": {
+
+          "status": {
+
+            "type": "string",
+
+            "example": "ok"
+          },
+
+          "database": {
+
+            "type": "string",
+
+            "example": "connected"
+          }
+        }
+      },
+
+      "HomeResponse": {
+
+        "type": "object",
+
+        "properties": {
+
+          "service": {
+
+            "type": "string",
+
+            "example": "Pokemon API"
+          },
+
+          "status": {
+
+            "type": "string",
+
+            "example": "Running"
+          },
+
+          "database": {
+
+            "type": "string",
+
+            "example": "MySQL Aiven"
+          },
+
+          "endpoints": {
+
+            "type": "object",
+
+            "properties": {
+
+              "pokemon": {
+
+                "type": "string",
+
+                "example":
+                  "/api/pokemon"
+              },
+
+              "pokemonById": {
+
+                "type": "string",
+
+                "example":
+                  "/api/pokemon/1"
+              },
+
+              "health": {
+
+                "type": "string",
+
+                "example":
+                  "/health"
+              },
+
+              "swagger": {
+
+                "type": "string",
+
+                "example":
+                  "/api-docs"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
