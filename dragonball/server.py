@@ -18,12 +18,12 @@ MONGO_URI = os.getenv(
 
 DB_NAME = os.getenv(
     "DB_NAME",
-    "dragonBall"
+    "dragonball"
 )
 
 COLLECTION_NAME = os.getenv(
     "COLLECTION_NAME",
-    "dragonball"
+    "characters"
 )
 
 # ======================================================
