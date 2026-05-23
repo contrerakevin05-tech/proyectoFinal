@@ -10,10 +10,13 @@ from pymongo.errors import ConnectionFailure
 
 PORT = int(os.getenv("PORT", 3003))
 
-# REEMPLAZA ESTA URI POR LA REAL DE MONGODB ATLAS
+# ======================================================
+# MONGODB ATLAS
+# ======================================================
+
 MONGO_URI = os.getenv(
     "MONGO_URI",
-    "mongodb+srv://YanCarlos:1234567890@pokeapibd.crjoj9o.mongodb.net/?appName=pokeapiBD"
+    "mongodb+srv://dragonuser:dragonball12345@cluster0.1m7x9xo.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 )
 
 DB_NAME = os.getenv(
@@ -47,12 +50,17 @@ try:
 
     collection = db[COLLECTION_NAME]
 
-    print("MongoDB Atlas Connected")
+    print("✅ MongoDB Atlas Connected")
+    print(f"📦 Database: {DB_NAME}")
+    print(f"📁 Collection: {COLLECTION_NAME}")
+
+    total = collection.count_documents({})
+
+    print(f"🔥 Total Documents: {total}")
 
 except ConnectionFailure as error:
 
-    print("MongoDB Connection Error")
-
+    print("❌ MongoDB Connection Error")
     print(error)
 
     exit(1)
@@ -172,6 +180,8 @@ class RequestHandler(BaseHTTPRequestHandler):
                     )
                 )
 
+                print(f"✅ Characters found: {len(characters)}")
+
                 return send_json(
                     self,
                     200,
@@ -180,15 +190,14 @@ class RequestHandler(BaseHTTPRequestHandler):
 
             except Exception as error:
 
-                print("Query Error")
-
+                print("❌ Query Error")
                 print(error)
 
                 return send_json(
                     self,
                     500,
                     {
-                        "error": "Internal Server Error"
+                        "error": str(error)
                     }
                 )
 
@@ -225,6 +234,20 @@ class RequestHandler(BaseHTTPRequestHandler):
                 )
 
         # ==============================================
+        # HEALTH
+        # ==============================================
+
+        if self.path == "/health":
+
+            return send_json(
+                self,
+                200,
+                {
+                    "status": "ok"
+                }
+            )
+
+        # ==============================================
         # 404
         # ==============================================
 
@@ -249,9 +272,13 @@ def run():
         RequestHandler
     )
 
-    print(f"Dragon Ball Service running on port {PORT}")
-
-    print(f"http://localhost:{PORT}/api/dragonball")
+    print("")
+    print("====================================")
+    print("🔥 Dragon Ball Service Running")
+    print(f"🌐 Port: {PORT}")
+    print(f"🌐 http://localhost:{PORT}/api/dragonball")
+    print("====================================")
+    print("")
 
     httpd.serve_forever()
 
